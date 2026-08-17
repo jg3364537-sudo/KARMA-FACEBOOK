@@ -58,4 +58,12 @@ function render(){feed.innerHTML=posts.map(p=>`<div class=card><div style=displa
 fileFoto.addEventListener('change',onFoto);fileAudio.addEventListener('change',onAudio);render();
 </script>
 </body>
-</html>
+</html><title>Karma facebook</title>
+<div style="background:#242526;padding:10px;display:flex;gap:8px"><b style="background:#2D88FF;color:#fff;width:36px;height:36px;border-radius:50%;display:grid;place-items:center">K</b><b>Karma <span style="color:#2D88FF">facebook</span></b></div>
+<input id=f type=file accept=image/*><input id=a type=file accept=audio/*><button onclick="p()">Publicar</button>
+<div id=feed></div>
+<script>
+let F,A;f.onchange=e=>F=URL.createObjectURL(e.target.files[0]);a.onchange=e=>A=URL.createObjectURL(e.target.files[0]);
+function p(){feed.innerHTML+=`<img src=${F} style=width:100%><audio controls src=${A} style=width:100%>`}
+</script>
+
