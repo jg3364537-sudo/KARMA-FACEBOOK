@@ -236,3 +236,35 @@ export default function PublicacionesTipoFacebook() {
   );
 }
 }
+const alCargarArchivo = (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const url = URL.createObjectURL(file);
+
+  // DETECTA BIEN SI ES MP3 AUNQUE VENGA COMO application/octet-stream
+  const esAudio = file.type.startsWith('audio/') || file.name.toLowerCase().endsWith('.mp3') || file.name.toLowerCase().endsWith('.wav') || file.name.toLowerCase().endsWith('.m4a');
+  const esVideo = file.type.startsWith('video/');
+  const esFoto = file.type.startsWith('image/');
+
+  let tipoFinal = 'archivo';
+  if (esFoto) tipoFinal = 'foto';
+  else if (esVideo) tipoFinal = 'video';
+  else if (esAudio) tipoFinal = 'audio';
+
+  const nuevaPub = {
+    id: Date.now(),
+    tipo: tipoFinal,
+    texto: texto,
+    archivo: url,
+    nombreArchivo: file.name,
+    fecha: new Date().toLocaleString(),
+    likes: 0,
+    likedBy: [],
+    comentarios: []
+  };
+
+  setPublicaciones(prev => [nuevaPub,...prev]);
+  setTexto('');
+  e.target.value = ''; // limpia el input para poder subir el mismo MP3 de nuevo
+};
