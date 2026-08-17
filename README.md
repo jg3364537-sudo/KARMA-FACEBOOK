@@ -268,3 +268,61 @@ const alCargarArchivo = (e) => {
   setTexto('');
   e.target.value = ''; // limpia el input para poder subir el mismo MP3 de nuevo
 };
+import { useState } from 'react';
+
+const YO = { id: 'jaime_123', nombre: 'Jaime' };
+
+export default function App() {
+  const [texto, setTexto] = useState('');
+  const [publicaciones, setPublicaciones] = useState([]);
+
+  // ESTADOS DE LOS BOTONES DEL PERFIL
+  const [estadoSolicitud, setEstadoSolicitud] = useState('nada'); // nada | enviada | amigos
+  const [siguiendo, setSiguiendo] = useState(false);
+  const [likePagina, setLikePagina] = useState(false);
+
+  const alCargarArchivo = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const url = URL.createObjectURL(file);
+
+    const esAudio = file.type.startsWith('audio/') || file.name.toLowerCase().endsWith('.mp3') || file.name.toLowerCase().endsWith('.m4a') || file.name.toLowerCase().endsWith('.wav');
+    const esVideo = file.type.startsWith('video/');
+    const esFoto = file.type.startsWith('image/');
+
+    let tipo = 'archivo';
+    if (esFoto) tipo = 'foto';
+    else if (esVideo) tipo = 'video';
+    else if (esAudio) tipo = 'audio';
+
+    setPublicaciones(p => [{ id: Date.now(), tipo, texto, archivo: url, nombreArchivo: file.name, likes: 0, likedBy: [], comentarios: [] },...p]);
+    setTexto('');
+    e.target.value = '';
+  };
+
+  const publicarEstado = () => {
+    if (!texto.trim()) return;
+    setPublicaciones(p => [{ id: Date.now(), tipo: 'estado', texto, archivo: null, likes: 0, likedBy: [], comentarios: [] },...p]);
+    setTexto('');
+  };
+
+  const darLike = (id) => {
+    setPublicaciones(prev => prev.map(pub => {
+      if (pub.id!== id) return pub;
+      const yaDioLike = pub.likedBy.includes(YO.id);
+      return yaDioLike
+       ? {...pub, likes: pub.likes - 1, likedBy: pub.likedBy.filter(u => u!== YO.id) }
+        : {...pub, likes: pub.likes + 1, likedBy: [...pub.likedBy, YO.id] };
+    }));
+  };
+
+  return (
+    <div style={{ background: '#f0f2f5', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+      {/* PORTADA PERFIL */}
+      <div style={{ background: 'white', paddingBottom: 15, boxShadow: '0 1px 2px rgba(0,0,0,0.1)' }}>
+        <div style={{ height: 180, background: 'linear-gradient(#1877f2, #ddd)' }}></div>
+        <div style={{ padding: '0 20px', marginTop: -30, display: 'flex', alignItems: 'end', gap: 15, flexWrap: 'wrap' }}>
+          <img src="https://i.pravatar.cc/150" style={{ width: 100, height: 100, borderRadius: '50%', border: '4px solid white' }} />
+          <div>
+            <h2 style={{ margin: 0 }}>Karma Musical</h2>
+            <p style={{ margin: 0, color: '#65676b' }}>{likePagina? '2.5K Me gusta' : '2.4K Me gusta'} • 5K seguidores</p>
