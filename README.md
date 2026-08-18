@@ -606,4 +606,138 @@ function unlock(id){if(logrosDes.includes(id))return;const l=LOGROS.find(x=>x.id
 function renderLogros(){logros.innerHTML=LOGROS.map(l=>`${logrosDes.includes(l.id)?'✅':'⬜'} ${l.i} ${l.n}`).join('<br>');}
 function renderUsers(){userList.innerHTML=amigos.length?amigos.map(a=>`<div class="ucard" onclick="currentChatId='${a.id}';chatName.innerText='${a.nombre}';chatAv.innerText='${a.nombre[0]}';currentConn=peer.connections['${a.id}']?.[0];renderMsgs()"><div style="display:flex;gap:5px;align-items:center"><div class="avatar">${a.nombre[0]}</div><div><b style="font-size:11px">${a.nombre}</b><br><span style="font-size:8px;color:#888">${a.id}</span></div></div><span style="color:#0f0;font-size:8px">●</span></div>`).join(''):'<div style="color:#555;text-align:center;padding:8px;font-size:10px">Pega ID</div>';}
 function save(){localStorage.setItem('kar_amigos',JSON.stringify(amigos));localStorage.setItem('kar_chats',JSON.stringify(chats));}
-</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>
+</script><script>(function(){var loc=location.href.replace(/#.*$/,"");var ATTR_NAMES=["data-product-id","data-productid","data-product_id","product-id","productid","product_id","data-source-entity-id","source-entity-id","source_entity_id","data-product","data-metadata","data-meta"];var DATASET_KEYS=["productId","productid","product_id","sourceEntityId","sourceentityid","source_entity_id","product","metadata","meta"];function readProductId(value){if(typeof value!=="string"||value.length===0)return null;if(/^[0-9]{6,}$/.test(value))return value;var match=value.match(/(?:product(?:_|-)?id|source(?:_|-)?entity(?:_|-)?id)["'=:\s]+([0-9]{6,})/i);return match?match[1]:null}function extractProductId(start){for(var node=start;node&&node!==document.body;node=node.parentElement){for(var i=0;i<ATTR_NAMES.length;i++){var attrValue=node.getAttribute&&node.getAttribute(ATTR_NAMES[i]);var attrProductId=readProductId(attrValue);if(attrProductId)return attrProductId}var dataset=node.dataset||null;if(dataset){for(var j=0;j<DATASET_KEYS.length;j++){var dataValue=dataset[DATASET_KEYS[j]];var dataProductId=readProductId(dataValue);if(dataProductId)return dataProductId}}}return null}function isInlineMediaSlotElement(node){return !!(node&&node.getAttribute&&node.getAttribute("data-clippy-inline-media-slot")!==null)}function findInlineMediaSlot(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(isInlineMediaSlotElement(node))return node}return null}function readInlineMediaUrl(node){if(!node)return null;return node.getAttribute&&((node.getAttribute("data-clippy-inline-media-url")||node.getAttribute("data-url")||node.getAttribute("data_url")))||node.href||null}function stripHash(url){return String(url).replace(/#.*$/,"")}function urlsMatch(a,b){if(!a||!b)return false;try{return stripHash(new URL(a,loc).href)===stripHash(new URL(b,loc).href)}catch(_){return stripHash(a)===stripHash(b)}}function isFirstPartyReelUrl(value){try{var url=new URL(value,loc);if(url.protocol!=="https:")return false;var host=url.hostname.toLowerCase();var supported=host==="instagram.com"||host.endsWith(".instagram.com")||host==="facebook.com"||host.endsWith(".facebook.com");return supported&&/\/reels?\//i.test(url.pathname)}catch(_){return false}}function isInlineMediaUrlClick(node,href){var slot=findInlineMediaSlot(node);if(!slot)return false;var slotUrl=readInlineMediaUrl(slot);if(slotUrl)return urlsMatch(href,slotUrl);return isFirstPartyReelUrl(href)}function findDataHref(start){for(var node=start;node&&node!==document.body;node=node.parentElement){if(node.getAttribute){var href=node.getAttribute("data-href")||node.getAttribute("data-url");if(href)return{href:href,node:node}}}return null}var nativeOpen=window.open;window.open=function(url){if(parent!==window&&typeof url==="string"&&/^https?:\/\//.test(url)){parent.postMessage({type:"ecto:usercontent-link-click",href:url},"*");return null}return nativeOpen?nativeOpen.apply(window,arguments):null};document.addEventListener("click",function(e){var target=e.target instanceof Element?e.target:null;if(!target)return;if(parent===window)return;var a=target.closest?target.closest("a[href]"):null;if(a&&a.href&&/^https?:\/\//.test(a.href)&&a.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(a,a.href))return;var productId=extractProductId(target)||extractProductId(a);if(productId){e.preventDefault();parent.postMessage({type:"ecto-artifact-link-click",productId:productId},"*");return}e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:a.href},"*");return}var dataHref=findDataHref(target);if(dataHref&&/^https?:\/\//.test(dataHref.href)&&dataHref.href.replace(/#.*$/,"")!==loc){if(isInlineMediaUrlClick(dataHref.node,dataHref.href))return;e.preventDefault();parent.postMessage({type:"ecto:usercontent-link-click",href:dataHref.href},"*")}},true)})();</script><script>(function(){var FOCUS_TYPE="ecto:artifact-focus-request";var CLOSE_TYPE="ecto:artifact-close-request";function focusArtifactDocument(){var body=document.body;if(!body)return;try{window.focus();}catch(e){}if(!body.hasAttribute("tabindex"))body.setAttribute("tabindex","-1");try{body.focus({preventScroll:true});}catch(e){try{body.focus();}catch(e2){}}}window.addEventListener("message",function(event){if(event.source!==window.parent)return;var data=event.data;if(!data||typeof data!=="object"||data.type!==FOCUS_TYPE)return;if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",focusArtifactDocument,{once:true});return;}focusArtifactDocument();});window.addEventListener("keydown",function(event){if(event.key!=="Escape")return;window.setTimeout(function(){if(event.defaultPrevented)return;window.parent.postMessage({type:CLOSE_TYPE},"*");},0);});})();</script></body></html>// ========== 1. CONFIGURACIÓN INDEPENDIENTE ILIMITADA ==========
+let miNombre = 'Jaime';
+let miId = 'KAR-' + Math.random().toString(36).substr(2,6).toUpperCase();
+let isPrivate = true; // true = privado, false = público
+let posts = JSON.parse(localStorage.getItem('kar_posts')||'[]');
+let chats = JSON.parse(localStorage.getItem('kar_chats')||'{}');
+let amigos = JSON.parse(localStorage.getItem('kar_amigos')||'[]'); // ♾️ ilimitados
+
+// ========== 2. PÚBLICO / PRIVADO - TÚ DECIDES ==========
+function setPriv(privado){
+  isPrivate = privado; // tú eliges
+}
+
+function publicar(){
+  const post = {
+    id: Date.now(),
+    texto: document.getElementById('postText').value,
+    media: pendingMedia, // video o audio
+    priv: isPrivate, // 🔒 o 🌍
+    owner: miNombre,
+    ownerId: miId, // dueño absoluto
+    time: new Date().toLocaleString()
+  };
+  posts.unshift(post);
+  localStorage.setItem('kar_posts', JSON.stringify(posts));
+  renderFeed();
+}
+
+// ========== 3. SOLO DUEÑO BORRA SU POST ==========
+function borrarPost(id){
+  const p = posts.find(x=>x.id===id);
+  if(p.ownerId!== miId) return alert('Solo el dueño puede borrar');
+  posts = posts.filter(x=>x.id!==id);
+  localStorage.setItem('kar_posts', JSON.stringify(posts));
+  renderFeed();
+}
+
+// ========== 4. MENSAJES ILIMITADOS - SOLO AUTOR BORRA ==========
+function enviar(){
+  const t = msgInput.value.trim();
+  if(!t) return;
+  const msg = {
+    id: Date.now(),
+    texto: t,
+    owner: miNombre,
+    ownerId: miId, // solo este borra
+    me: true
+  };
+  if(!chats[currentChatId]) chats[currentChatId]=[];
+  chats[currentChatId].push(msg);
+  if(currentConn) currentConn.send(msg);
+  save();
+  renderMsgs();
+}
+
+function borrarMsg(id){
+  const msg = chats[currentChatId].find(x=>x.id===id);
+  if(msg.ownerId!== miId) return alert('Solo quien escribió borra');
+  chats[currentChatId] = chats[currentChatId].filter(x=>x.id!==id);
+  save();
+  renderMsgs();
+}
+
+// ========== 5. TODOS PUEDEN SUBIR Y REPRODUCIR VIDEO/MÚSICA ==========
+let pendingMedia = null;
+
+function handleVideo(input){
+  const f = input.files[0];
+  const url = URL.createObjectURL(f);
+  const v = document.createElement('video');
+  v.preload = 'metadata';
+  v.src = url;
+  v.onloadedmetadata = ()=>{
+    pendingMedia = {
+      type:'video',
+      url:url,
+      duration: v.duration.toFixed(1)+'s',
+      w: v.videoWidth,
+      h: v.videoHeight,
+      size: (f.size/1024/1024).toFixed(2)+' MB',
+      codec: f.type,
+      ownerId: miId
+    };
+  };
+}
+
+function handleAudio(input){
+  const f = input.files[0];
+  const url = URL.createObjectURL(f);
+  const a = new Audio();
+  a.preload = 'metadata';
+  a.src = url;
+  a.onloadedmetadata = ()=>{
+    pendingMedia = {
+      type:'audio',
+      url:url,
+      duration: a.duration.toFixed(1)+'s',
+      size: (f.size/1024/1024).toFixed(2)+' MB',
+      codec: f.type,
+      ownerId: miId
+    };
+  };
+}
+
+// ========== 6. VOLUMEN 🔊 ==========
+function setVol(videoId, valor){
+  document.getElementById(videoId).volume = valor; // 0 a 1
+}
+function toggleMute(videoId){
+  const v = document.getElementById(videoId);
+  v.muted =!v.muted;
+}
+
+// ========== 7. IMAGEN DE PANTALLA 📸 ==========
+function captureScreen(videoId){
+  const v = document.getElementById(videoId);
+  const c = document.createElement('canvas');
+  c.width = v.videoWidth;
+  c.height = v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);
+  const imagen = c.toDataURL('image/png');
+  v.poster = imagen; // se queda como miniatura
+  return imagen;
+}
+
+// ========== 8. TODOS PUEDEN LLAMAR Y VIDEO LLAMADA ==========
+async function llamar(conVideo){
+  localStream = await navigator.mediaDevices.getUserMedia({audio:true, video:conVideo});
+  const call = peer.call(currentChatId, localStream, {metadata:{video:conVideo}});
+  call.on('stream', s=> remoteV.srcObject = s);
+}
+function colgar(){
+  if(currentCall) currentCall.close();
+  if(localStream) localStream.getTracks().forEach(t=>t.stop());
+}
