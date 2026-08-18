@@ -520,4 +520,27 @@ android.buildTypes.release {
   v.onloadedmetadata=()=>{
     console.log(v.duration, v.videoWidth, v.videoHeight);
   };
-</script>
+</script><div style="background:#111;border:1px solid #222;border-radius:16px;padding:12px">
+  <span style="background:#ffcc00;color:#000;font-size:10px;padding:2px 8px;border-radius:10px">PATROCINADO</span>
+  <h3>Título de tu anuncio</h3>
+  <video src="video_anuncio.mp4" controls preload="metadata" style="width:100%;border-radius:10px;margin-top:8px"></video>
+  <button onclick="window.open('https://tu-link.com','_blank')" style="width:100%;margin-top:8px;background:#ffcc00;color:#000;border:none;padding:10px;border-radius:10px;font-weight:800">Ver oferta →</button>
+</div>// VOLUMEN
+video.volume = 0.5; // 0 a 1
+audio.volume = 0.8;
+video.muted = true/false;
+
+// CAPTURA DE PANTALLA DE VIDEO
+function capturarPantalla(){
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video,0,0);
+  const imagen = canvas.toDataURL('image/png');
+  document.getElementById('poster').src = imagen;
+  video.poster = imagen; // para que se vea como miniatura
+}
+
+// SLIDER HTML
+<input type="range" min="0" max="1" step="0.05" value="1" 
+ oninput="video.volume=this.value">
