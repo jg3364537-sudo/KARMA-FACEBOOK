@@ -325,4 +325,87 @@ export default function App() {
           <img src="https://i.pravatar.cc/150" style={{ width: 100, height: 100, borderRadius: '50%', border: '4px solid white' }} />
           <div>
             <h2 style={{ margin: 0 }}>Karma Musical</h2>
-            <p style={{ margin: 0, color: '#65676b' }}>{likePagina? '2.5K Me gusta' : '2.4K Me gusta'} • 5K seguidores</p>
+            <p style={{ margin: 0, color: '#65676b' }}>{likePagina? '2.5K Me gusta' : '2.4K Me gusta'} • 5K seguidores</p><!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FACEMEX</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,system-ui}
+body{background:#0f0f0f;color:white}
+.top{background:#1a1a1a;padding:14px;text-align:center;border-bottom:2px solid #2D88FF;position:sticky;top:0;z-index:10}
+.top h1{color:#2D88FF;font-size:32px;letter-spacing:3px;font-weight:900}
+.box{max-width:420px;margin:20px auto;padding:16px}
+.card{background:#1e1e1e;border-radius:18px;padding:14px;margin-bottom:12px;border:1px solid #2a2a2a}
+input,textarea{width:100%;background:#111;border:1px solid #333;color:white;padding:12px;border-radius:12px;margin-bottom:8px}
+.btn{width:100%;background:#2D88FF;color:white;border:none;padding:12px;border-radius:12px;font-weight:800}
+.row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.chip{background:#2a2a2a;padding:8px 12px;border-radius:20px;font-size:13px;border:none;color:white}
+.oculto{display:none}
+.feed-img,.feed-video{width:100%;border-radius:14px;margin-top:8px}
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;background:#111;padding:8px;border-radius:12px;max-height:140px;overflow:auto}
+</style>
+</head>
+<body>
+<div class="top"><h1>FACEMEX</h1></div>
+
+<div class="box" id="p1">
+  <div class="card">
+    <h3 style="text-align:center;margin-bottom:10px">Crear cuenta FACEMEX</h3>
+    <input id="cor" placeholder="Correo">
+    <input id="pas" type="password" placeholder="Contraseña">
+    <button class="btn" onclick="genCod()">Continuar</button>
+  </div>
+</div>
+
+<div class="box oculto" id="p2">
+  <div class="card" style="text-align:center">
+    <p>Código enviado a <b id="tCor"></b></p>
+    <p id="tCod" style="color:#2D88FF;font-weight:900;font-size:18px;margin:8px 0"></p>
+    <input id="cod" placeholder="000000" style="text-align:center;letter-spacing:8px;font-size:22px">
+    <button class="btn" onclick="entrar()">Entrar a FACEMEX</button>
+  </div>
+</div>
+
+<div class="box oculto" id="p3">
+  <div class="card" style="text-align:center">
+    <div style="font-size:50px">👤</div>
+    <h3>Bienvenido</h3>
+    <p id="segTxt" style="color:#888;font-size:12px">0 Me gusta • 0 seguidores</p>
+    <div class="row" style="justify-content:center"><button class="chip" onclick="seguir()">+ Seguir</button><button class="chip" onclick="likePage()">👍 Like</button></div>
+  </div>
+  <div class="card">
+    <textarea id="txt" placeholder="¿Qué pasa en México?"></textarea>
+    <div class="emoji-grid" id="emGrid"></div>
+    <div class="row">
+      <input type="file" id="f1" accept="image/*" hidden onchange="upF(event)"><input type="file" id="f2" accept="video/*" hidden onchange="upV(event)"><input type="file" id="f3" accept="audio/*" hidden onchange="upA(event)">
+      <button class="chip" onclick="f1.click()">📷 Foto</button><button class="chip" onclick="f2.click()">🎬 Video</button><button class="chip" onclick="f3.click()">🎵 Audio</button><button class="btn" style="flex:1" onclick="post()">Publicar</button>
+    </div>
+    <div id="prev"></div>
+  </div>
+  <div id="feed"></div>
+</div>
+
+<script>
+let codG='', tf=null,tv=null,ta=null, posts=[], seg=0, lk=0;
+let EMO=["😀","😂","❤️","🔥","🇲🇽","💚","🤍","😍","🥺","😎","🫶","✨","🎉","👏","💯","😭","🤩","🙏","😱","💀"];
+function genCod(){ if(!cor.value) return alert('correo'); codG=Math.floor(100000+Math.random()*900000)+''; tCor.innerText=cor.value; tCod.innerText='CODIGO: '+codG; p1.classList.add('oculto'); p2.classList.remove('oculto'); emGrid.innerHTML=EMO.map(e=>`<button onclick="txt.value+= '${e}'" style="background:transparent;border:none;font-size:20px">${e}</button>`).join('');}
+function entrar(){ if(cod.value===codG){ p2.classList.add('oculto'); p3.classList.remove('oculto'); } else alert('codigo mal'); }
+function upF(e){ tf=URL.createObjectURL(e.target.files[0]); verP(); } function upV(e){ tv=URL.createObjectURL(e.target.files[0]); verP(); } function upA(e){ ta=URL.createObjectURL(e.target.files[0]); verP(); }
+function verP(){ prev.innerHTML=`${tf?`<img src="${tf}" class="feed-img">`:''}${tv?`<video src="${tv}" controls class="feed-video">`:''}${ta?`<audio src="${ta}" controls style="width:100%">`:''}`; }
+function seguir(){ seg++; upS(); } function likePage(){ lk++; upS(); } function upS(){ segTxt.innerText=`${lk} Me gusta • ${seg} seguidores`; }
+function post(){ if(!txt.value &&!tf &&!tv &&!ta) return; posts.unshift({id:Date.now(),t:txt.value,f:tf,v:tv,a:ta,l:0,lc:false,com:[]}); txt.value=''; prev.innerHTML=''; tf=tv=ta=null; render(); }
+function like(id){ let p=posts.find(x=>x.id===id); p.lc=!p.lc; p.l+=p.lc?1:-1; render(); }
+function render(){ feed.innerHTML=posts.map(p=>`
+<div class="card">
+<p>${p.t}</p>
+${p.f?`<img src="${p.f}" class="feed-img" id="im${p.id}"><input type="range" min="30" max="150" value="100" style="width:100%" oninput="document.getElementById('im${p.id}').style.filter='brightness('+this.value+'%)'">`:''}
+${p.v?`<video src="${p.v}" controls class="feed-video"></video>`:''}
+${p.a?`<audio src="${p.a}" controls style="width:100%;margin-top:6px"></audio>`:''}
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#888;margin-top:8px;border-top:1px solid #2a2a2a;padding-top:6px"><span>👍 ${p.l} likes ilimitados</span><span>${p.com.length} comentarios</span></div>
+<div class="row"><button class="chip" style="flex:1;color:${p.lc?'#2D88FF':''}" onclick="like(${p.id})">${p.lc?'Te gusta':'Me gusta'}</button><button class="chip" style="flex:1" onclick="let c=prompt('comenta'); if(c){ posts.find(x=>x.id===${p.id}).com.push(c); render(); }">Comentar</button></div>
+${p.com.map(c=>`<div style="background:#111;padding:6px 10px;border-radius:12px;margin-top:4px;font-size:13px">${c}</div>`).join('')}
+</div>`).join(''); }
+</script>
+</body>
+</html>
