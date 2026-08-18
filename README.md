@@ -486,4 +486,18 @@ function render(){userList.innerHTML=amigos.map(u=>`<div class="user-card" oncli
 function save(){localStorage.setItem('kar_amigos',JSON.stringify(amigos));localStorage.setItem('kar_chats',JSON.stringify(chats));}
 </script>
 </body>
-</html>
+</html>android {
+  namespace 'com.kar.facemex'
+  compileSdk 34
+  buildFeatures { buildConfig true }
+  packaging {
+    resources { excludes += '/META-INF/{AL2.0,LGPL2.1}' }
+  }
+}
+
+android.buildTypes.release {
+  minifyEnabled false // <--- Apágalo temporal para compilar
+  // si lo quieres con minify:
+  // minifyEnabled true
+  // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+}
