@@ -408,4 +408,82 @@ ${p.com.map(c=>`<div style="background:#111;padding:6px 10px;border-radius:12px;
 </div>`).join(''); }
 </script>
 </body>
+</html><!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAR FACEMEX</title>
+<script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui}
+body{background:#0a0a0a;color:#fff;height:100vh;display:flex;flex-direction:column}
+.header{background:#121212;padding:12px;display:flex;justify-content:space-between;border-bottom:1px solid #222}
+.main{flex:1;display:flex;overflow:hidden}
+.sidebar{width:320px;background:#121212;border-right:1px solid #222;display:flex;flex-direction:column}
+.list{flex:1;overflow:auto;padding:8px}
+.user-card{background:#1e1e1e;margin-bottom:8px;padding:10px;border-radius:12px;display:flex;justify-content:space-between;cursor:pointer}
+.avatar{width:36px;height:36px;background:linear-gradient(45deg,#00d4ff,#7c3aed);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold}
+.chat-area{flex:1;display:flex;flex-direction:column;position:relative}
+.messages{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px}
+.msg.me{align-self:flex-end;background:#00d4ff;color:#000}
+.msg.other{align-self:flex-start;background:#1e1e1e}
+.input-area{padding:12px;background:#121212;display:flex;gap:8px}
+.input-area input{flex:1;background:#1e1e1e;border:1px solid #333;padding:12px 16px;border-radius:25px;color:#fff;outline:none}
+.video-container{position:absolute;inset:0;background:#000;z-index:20;display:none;flex-direction:column}
+.video-container.active{display:flex}
+#remoteVideo{width:100%;height:100%;object-fit:cover}
+#localVideo{position:absolute;bottom:20px;right:20px;width:110px;height:150px;border-radius:12px;object-fit:cover;border:2px solid #fff}
+.call-controls{padding:20px;background:#121212;display:flex;justify-content:center;gap:16px}
+.ctrl{width:56px;height:56px;border-radius:50%;border:none;font-size:22px;cursor:pointer}
+.ctrl.hang{background:#ff3040;color:#fff}
+#login{position:fixed;inset:0;background:#000;z-index:100;display:flex;align-items:center;justify-content:center;padding:20px}
+.login-card{background:#121212;padding:28px;border-radius:20px;width:100%;max-width:340px;border:1px solid #222}
+</style>
+</head>
+<body>
+<div id="login">
+  <div class="login-card">
+    <h2>KAR <span style="color:#00d4ff">FACEMEX</span></h2>
+    <p style="color:#888;font-size:13px;margin:10px 0 20px">Con cámara, mic, chat y solicitudes</p>
+    <input id="nameInput" placeholder="Tu nombre" style="width:100%;padding:14px;background:#0a0a0a;border:1px solid #333;border-radius:12px;color:#fff;margin-bottom:12px">
+    <button onclick="iniciar()" style="width:100%;padding:14px;background:#00d4ff;border:none;border-radius:12px;font-weight:bold;cursor:pointer">Activar cámara y entrar</button>
+  </div>
+</div>
+
+<div class="header">
+  <div style="font-weight:900">KAR <span style="color:#00d4ff">FACEMEX</span></div>
+  <div style="background:#1e1e1e;padding:6px 10px;border-radius:20px;font-size:11px">ID: <b id="myId">...</b> <span onclick="navigator.clipboard.writeText(myId.innerText)">📋</span></div>
+</div>
+
+<div class="main">
+  <div class="sidebar">
+    <div style="padding:10px;display:flex;gap:6px"><input id="peerIdInput" placeholder="Pega ID KAR-XXXX" style="flex:1;background:#0a0a0a;border:1px solid #333;padding:8px;border-radius:8px;color:#fff"><button onclick="conectar()" style="background:#00d4ff;border:none;padding:8px 12px;border-radius:8px;font-weight:bold">Conectar</button></div>
+    <div class="list" id="userList"></div>
+  </div>
+  <div class="chat-area">
+    <div style="padding:12px;background:#121212;display:flex;gap:10px;align-items:center">
+      <div class="avatar" id="chatAvatar">K</div><div id="chatName" style="font-weight:bold">Selecciona un chat</div>
+      <div style="margin-left:auto;display:flex;gap:8px"><button onclick="llamar(false)" style="width:42px;height:42px;border-radius:50%;border:none;background:#00ff88">📞</button><button onclick="llamar(true)" style="width:42px;height:42px;border-radius:50%;border:none;background:#7c3aed;color:#fff">📹</button></div>
+    </div>
+    <div class="messages" id="messages"><div style="text-align:center;color:#666;margin-top:40px">Conecta con un ID para empezar</div></div>
+    <div class="input-area"><input id="msgInput" placeholder="Mensaje..." onkeypress="if(event.key==='Enter') enviar()"><button onclick="enviar()" style="width:42px;height:42px;border-radius:50%;border:none;background:#00d4ff">➤</button></div>
+    <div class="video-container" id="videoBox"><video id="remoteVideo" autoplay playsinline></video><video id="localVideo" autoplay playsinline muted></video><div class="call-controls"><button class="ctrl hang" onclick="colgar()">✕</button></div></div>
+  </div>
+</div>
+
+<script>
+let peer, localStream, currentCall, currentConn, amigos=JSON.parse(localStorage.getItem('kar_amigos')||'[]'), chats=JSON.parse(localStorage.getItem('kar_chats')||'{}'), currentChatId=null, miNombre='';
+function iniciar(){miNombre=nameInput.value||'Jaime';login.style.display='none';peer=new Peer('KAR-'+Math.random().toString(36).substr(2,6).toUpperCase());peer.on('open',id=>myId.innerText=id);peer.on('connection',c=>setup(c));peer.on('call',async call=>{if(confirm('Llamada de '+call.peer+' ¿Aceptar?')){localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:call.metadata.video});localVideo.srcObject=localStream;call.answer(localStream);setupCall(call);}});render();}
+function conectar(){const id=peerIdInput.value.trim();if(!id)return;setup(peer.connect(id,{metadata:{nombre:miNombre}}));}
+function setup(conn){conn.on('open',()=>{currentConn=conn;if(!amigos.find(a=>a.id===conn.peer))amigos.push({id:conn.peer,nombre:conn.metadata.nombre||conn.peer});currentChatId=conn.peer;chatName.innerText=conn.metadata.nombre||conn.peer;chatAvatar.innerText=(conn.metadata.nombre||'K')[0];render();save();conn.on('data',d=>{if(!chats[conn.peer])chats[conn.peer]=[];chats[conn.peer].push({me:false,texto:d.texto});save();renderMsg();});});}
+function enviar(){const t=msgInput.value.trim();if(!t||!currentChatId)return;if(!chats[currentChatId])chats[currentChatId]=[];chats[currentChatId].push({me:true,texto:t});if(currentConn)currentConn.send({texto:t});msgInput.value='';save();renderMsg();}
+function renderMsg(){const b=messages;if(!currentChatId||!chats[currentChatId])return;b.innerHTML=chats[currentChatId].map(m=>`<div class="msg ${m.me?'me':'other'}">${m.texto}</div>`).join('');b.scrollTop=b.scrollHeight;}
+async function llamar(v){if(!currentChatId)return alert('Conecta primero');localStream=await navigator.mediaDevices.getUserMedia({audio:true,video:v});localVideo.srcObject=localStream;videoBox.classList.add('active');const call=peer.call(currentChatId,localStream,{metadata:{video:v}});setupCall(call);}
+function setupCall(call){currentCall=call;videoBox.classList.add('active');call.on('stream',s=>remoteVideo.srcObject=s);call.on('close',colgar);}
+function colgar(){if(currentCall)currentCall.close();if(localStream)localStream.getTracks().forEach(t=>t.stop());videoBox.classList.remove('active');}
+function render(){userList.innerHTML=amigos.map(u=>`<div class="user-card" onclick="currentChatId='${u.id}';chatName.innerText='${u.nombre}';chatAvatar.innerText='${u.nombre[0]}';currentConn=peer.connections['${u.id}']?.[0];renderMsg()"><div style="display:flex;gap:10px;align-items:center"><div class="avatar">${u.nombre[0]}</div><div><b>${u.nombre}</b><br><span style="font-size:11px;color:#888">${u.id}</span></div></div><span style="color:#00ff88">●</span></div>`).join('');}
+function save(){localStorage.setItem('kar_amigos',JSON.stringify(amigos));localStorage.setItem('kar_chats',JSON.stringify(chats));}
+</script>
+</body>
 </html>
