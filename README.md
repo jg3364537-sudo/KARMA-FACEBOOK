@@ -501,3 +501,23 @@ android.buildTypes.release {
   // minifyEnabled true
   // proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
 }
+<video 
+  src="URL_DEL_VIDEO" 
+  controls 
+  playsinline 
+  preload="metadata" 
+  poster="miniatura.jpg"
+  style="width:100%;border-radius:12px">
+  <source src="URL_DEL_VIDEO" type="video/mp4">
+</video>
+<div style="font-size:10px;color:#888">
+  📹 1920x1080 • 2.5s • video/mp4 • 3.2 MB • 👁️ 1.2k
+</div>
+<script>
+  const v = document.createElement('video');
+  v.preload='metadata';
+  v.src=url;
+  v.onloadedmetadata=()=>{
+    console.log(v.duration, v.videoWidth, v.videoHeight);
+  };
+</script>
