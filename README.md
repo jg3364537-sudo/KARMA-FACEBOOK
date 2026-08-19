@@ -824,4 +824,109 @@ function reproducirEnFeed(url){
 <input type="range" min="0" max="1" step="0.05" value="1"
        oninput="setVol(this.value)"> 🔊
 <button onclick="fullscreen()">⛶ Full</button>
-<button onclick="capturarPantalla()">📸 Captura</button>
+<button onclick="capturarPantalla()">📸 Captura</button>// VIDEO EN FED
+let postVideoData = null;
+function setPostMediaVideo(inp){
+  let f = inp.files[0];
+  if(!f) return;
+  let r = new FileReader();
+  r.onload = e => {
+    postVideoData = e.target.result;
+    postPreview.innerHTML = `
+      <video src="${postVideoData}" controls style="width:100%;max-height:350px;border-radius:12px;margin-top:8px" autoplay muted loop></video>
+      <div style="font-size:10px;color:#00ff6a;margin-top:4px">✅ Video listo para compartir en Fed - ${f.name}</div>
+      <button class="btn btn-small" onclick="postVideoData=null;postPreview.innerHTML=''" style="margin-top:4px">❌ Quitar</button>
+    `;
+  };
+  r.readAsDataURL(f);
+}
+
+// SOBRESCRIBE tu función publicar() original por esta mejorada
+function publicar(){
+  let txt = postText.value.trim();
+  let priv = postPriv.value;
+  if(!txt &&!postMedia &&!postVideoData) return alert('Escribe algo o sube video/foto');
+
+  let nuevoPost = {
+    id: Date.now(),
+    userId: ME.id,
+    nombre: ME.nombre,
+    user: ME.user,
+    region: ME.region,
+    texto: txt,
+    foto: ME.foto,
+    media: postMedia, // foto
+    video: postVideoData, // video en fed
+    priv: priv,
+    time: Date.now(),
+    likes: 0,
+    comentarios: []
+  };
+
+  DB.posts.unshift(nuevoPost);
+  saveDB();
+
+  // Limpiar
+  postText.value = '';
+  postMedia = null;
+  postVideoData = null;
+  postPreview.innerHTML = '';
+
+  renderFeed();
+  alert('📹 Video compartido en tu Fed con privacidad: '+priv);
+}
+
+// RENDER FEED CON VIDEO
+function renderFeedConVideo(){
+  let feedDiv = document.getElementById('feedList');
+  if(!feedDiv) return;
+
+  feedDiv.innerHTML = DB.posts.map(p=>{
+    let puedeVer = true;
+    if(p.priv==='amigos' &&!isFriend(p.userId) && p.userId!==ME.id) puedeVer=false;
+    if(p.priv==='privado' && p.userId!==ME.id) puedeVer=false;
+
+    if(!puedeVer) return '';
+
+    return `
+    <div class="card">
+      <div style="display:flex;gap:8px">
+        <div class="avatar">${p.foto?`<img src="${p.foto}" style="width:100%;height:100%;border-radius:50%">`:p.nombre[0]}</div>
+        <div><b style="font-size:12px">${p.nombre}</b><div style="font-size:10px;color:#888">@${p.user} • ${p.region} • ${p.priv}</div></div>
+      </div>
+      <div style="margin-top:8px;font-size:13px">${p.texto}</div>
+      ${p.media?`<img src="${p.media}" class="post-media">`:''}
+      ${p.video?`<video src="${p.video}" controls style="width:100%;border-radius:12px;margin-top:8px;max-height:420px" controlsList="nodownload"></video>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <button class="btn btn-small" onclick="compartirVideo(${p.id})">↗️ Compartir</button>
+        <button class="btn btn-small" onclick="guardarVideo(${p.id})">💾 Guardar</button>
+        <button class="btn btn-small">👁️ ${p.priv}</button>
+      </div>`:''}
+      <div style="margin-top:8px;display:flex;gap:6px">
+        <button class="btn btn-small" onclick="likePost(${p.id})">❤️ ${p.likes||0}</button>
+        <button class="btn btn-small" onclick="comentarPost(${p.id})">💬 Comentar</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function compartirVideo(id){
+  let post = DB.posts.find(x=>x.id===id);
+  if(!post) return;
+  DB.posts.unshift({...post, id:Date.now(), userId:ME.id, nombre:ME.nombre, compartidoDe:post.nombre});
+  saveDB(); renderFeed(); alert('Video compartido en tu Fed');
+}
+function guardarVideo(id){
+  let post = DB.posts.find(x=>x.id===id);
+  if(post && post.video){
+    let a = document.createElement('a');
+    a.href = post.video;
+    a.download = 'karfed-video.mp4';
+    a.click();
+  }
+}<!-- EN TU TAB FEED, después del textarea de texto, agrega esto -->
+<div class="grid2" style="margin-top:8px">
+  <label class="btn" style="text-align:center">📷 Foto<input type="file" accept="image/*" hidden onchange="setPostMedia(this,'img')"></label>
+  <label class="btn btn-blue" style="text-align:center">📹 Compartir Video en Fed<input type="file" accept="video/*" hidden onchange="setPostMediaVideo(this)"></label>
+</div>
+<div id="postPreview"></div>
