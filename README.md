@@ -1015,8 +1015,299 @@ Error generating stack: `+u.message+`
             .endAt(t + "\uf8ff")
             .limit(20)
             .get().addOnSuccessListener { res ->
-                callbackGrupos(res.documents.map { it.data ?: mapOf() })
+                callbackGrupos(res.documents.map { it.data ?: mapOf() })package com.karmamusical.app
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import java.util.UUID
+import kotlin.random.Random
+
+object KarmaAppFix {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
+    // 1. REGISTRO CON CÓDIGO 6 DÍGITOS AL AZAR
+    fun registrarUsuario(nombre: String, apellido: String, username: String, email: String, pass: String, callback: (String) -> Unit) {
+        auth.createUserWithEmailAndPassword(email, pass).addOnSuccessListener { res ->
+            val uid = res.user!!.uid
+            val codigo = "KARMA-${Random.nextInt(100000, 999999)}"
+            val datos = hashMapOf(
+                "id" to uid,
+                "codigo_karma" to codigo,
+                "nombre" to nombre,
+                "apellido" to apellido,
+                "username" to username.lowercase(),
+                "nombre_completo" to "$nombre $apellido",
+                "email" to email,
+                "amigos_count" to 0,
+                "invitaciones_recibidas" to 0,
+                "fecha" to FieldValue.serverTimestamp()
+            )
+            db.collection("usuarios").document(uid).set(datos)
+            callback(codigo)
+        }
+    }
+
+    // 2. PUBLICAR - AUDIO, VIDEO, FOTO, MENSAJE, ESTADO, HISTORIA
+    fun publicar(tipo: String, urlContenido: String, texto: String, region: String) {
+        val uid = auth.currentUser!!.uid
+        val idPub = UUID.randomUUID().toString()
+        val pub = hashMapOf(
+            "id_publicacion" to idPub,
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "tipo" to tipo, // audio, video, foto, mensaje, estado, historia
+            "url" to urlContenido,
+            "texto" to texto,
+            "fecha" to FieldValue.serverTimestamp(),
+            "fecha_string" to System.currentTimeMillis(),
+            "region" to region, // Ej: "Tonalá, Jalisco, MX" - lo tomas del GPS
+            "conteo_likes" to 0,
+            "conteo_comentarios" to 0,
+            "conteo_reproducciones" to 0,
+            "conteo_vistas_foto" to 0
+        )
+        db.collection("publicaciones").document(idPub).set(pub)
+    }
+
+    // 3. REPRODUCCIÓN INDIVIDUAL - CADA QUIEN VE POR SU CUENTA
+    // Nadie ve lo que ve el otro, cada uno reproduce cuando quiere
+    fun registrarReproduccion(idPublicacion: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val idRegistro = "${uid}_${idPublicacion}_${System.currentTimeMillis()}"
+        
+        val registro = hashMapOf(
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "id_publicacion" to idPublicacion,
+            "accion" to "reproduccion_video_audio", // o vista_foto
+            "fecha" to FieldValue.serverTimestamp(),
+            "fecha_exacta" to System.currentTimeMillis(),
+            "hora_local" to java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date())
+        )
+        // Se guarda el registro individual en la publicación
+        db.collection("publicaciones").document(idPublicacion)
+            .collection("historial_reproducciones").document(idRegistro).set(registro)
+
+        // Aumenta conteo total
+        db.collection("publicaciones").document(idPublicacion)
+            .update("conteo_reproducciones", FieldValue.increment(1))
+    }
+
+    fun registrarVistaFoto(idPublicacion: String) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("publicaciones").document(idPublicacion)
+            .collection("historial_vistas").add(mapOf(
+                "id_usuario" to uid,
+                "fecha" to FieldValue.serverTimestamp(),
+                "hora_exacta" to System.currentTimeMillis()
+            ))
+        db.collection("publicaciones").document(idPublicacion)
+            .update("conteo_vistas_foto", FieldValue.increment(1))
+    }
+
+    // 4. LIKES Y COMENTARIOS CON REGISTRO COMPLETO
+    fun darLike(idPublicacion: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val likeId = "${uid}_${idPublicacion}"
+        val data = hashMapOf(
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "id_publicacion" to idPublicacion,
+            "fecha" to FieldValue.serverTimestamp(),
+            "hora_exacta" to System.currentTimeMillis(),
+            "hora_legible" to java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date())
+        )
+        db.collection("likes").document(likeId).set(data)
+        db.collection("publicaciones").document(idPublicacion).collection("registro_likes").document(likeId).set(data)
+        db.collection("publicaciones").document(idPublicacion).update("conteo_likes", FieldValue.increment(1))
+    }
+
+    fun comentar(idPublicacion: String, comentario: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val data = hashMapOf(
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "id_publicacion" to idPublicacion,
+            "comentario" to comentario,
+            "fecha" to FieldValue.serverTimestamp(),
+            "hora_exacta" to System.currentTimeMillis(),
+            "region" to "auto-detectar GPS"
+        )
+        db.collection("publicaciones").document(idPublicacion).collection("comentarios").add(data)
+        db.collection("publicaciones").document(idPublicacion).update("conteo_comentarios", FieldValue.increment(1))
+    }
+
+    // 5. LUPA - USUARIOS Y GRUPOS
+    fun buscarEnLupa(texto: String, cbUsers: (List<Map<String, Any>>) -> Unit, cbGrupos: (List<Map<String, Any>>) -> Unit) {
+        val t = texto.lowercase()
+        db.collection("usuarios").orderBy("username").startAt(t).endAt(t + "\uf8ff").limit(20)
+            .get().addOnSuccessListener { cbUsers(it.documents.map { d -> d.data!! }) }
+        db.collection("grupos").orderBy("nombre").startAt(t).endAt(t + "\uf8ff").limit(20)
+            .get().addOnSuccessListener { cbGrupos(it.documents.map { d -> d.data!! }) }
+    }
+
+    // 6. GRUPOS
+    fun crearGrupo(nombre: String, tipo: String, reglas: String) {
+        db.collection("grupos").add(mapOf(
+            "id" to UUID.randomUUID().toString(),
+            "nombre" to nombre,
+            "tipo" to tipo,
+            "reglas" to reglas,
+            "id_creador" to auth.currentUser!!.uid,
+            "fecha" to FieldValue.serverTimestamp()
+        ))
+    }
+}
             }
     }
             }
     }
+package com.karmamusical.app
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import java.util.UUID
+import kotlin.random.Random
+
+object KarmaAppFix {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
+    // 1. REGISTRO CON CÓDIGO 6 DÍGITOS AL AZAR
+    fun registrarUsuario(nombre: String, apellido: String, username: String, email: String, pass: String, callback: (String) -> Unit) {
+        auth.createUserWithEmailAndPassword(email, pass).addOnSuccessListener { res ->
+            val uid = res.user!!.uid
+            val codigo = "KARMA-${Random.nextInt(100000, 999999)}"
+            val datos = hashMapOf(
+                "id" to uid,
+                "codigo_karma" to codigo,
+                "nombre" to nombre,
+                "apellido" to apellido,
+                "username" to username.lowercase(),
+                "nombre_completo" to "$nombre $apellido",
+                "email" to email,
+                "amigos_count" to 0,
+                "invitaciones_recibidas" to 0,
+                "fecha" to FieldValue.serverTimestamp()
+            )
+            db.collection("usuarios").document(uid).set(datos)
+            callback(codigo)
+        }
+    }
+
+    // 2. PUBLICAR - AUDIO, VIDEO, FOTO, MENSAJE, ESTADO, HISTORIA
+    fun publicar(tipo: String, urlContenido: String, texto: String, region: String) {
+        val uid = auth.currentUser!!.uid
+        val idPub = UUID.randomUUID().toString()
+        val pub = hashMapOf(
+            "id_publicacion" to idPub,
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "tipo" to tipo, // audio, video, foto, mensaje, estado, historia
+            "url" to urlContenido,
+            "texto" to texto,
+            "fecha" to FieldValue.serverTimestamp(),
+            "fecha_string" to System.currentTimeMillis(),
+            "region" to region, // Ej: "Tonalá, Jalisco, MX" - lo tomas del GPS
+            "conteo_likes" to 0,
+            "conteo_comentarios" to 0,
+            "conteo_reproducciones" to 0,
+            "conteo_vistas_foto" to 0
+        )
+        db.collection("publicaciones").document(idPub).set(pub)
+    }
+
+    // 3. REPRODUCCIÓN INDIVIDUAL - CADA QUIEN VE POR SU CUENTA
+    // Nadie ve lo que ve el otro, cada uno reproduce cuando quiere
+    fun registrarReproduccion(idPublicacion: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val idRegistro = "${uid}_${idPublicacion}_${System.currentTimeMillis()}"
+        
+        val registro = hashMapOf(
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "id_publicacion" to idPublicacion,
+            "accion" to "reproduccion_video_audio", // o vista_foto
+            "fecha" to FieldValue.serverTimestamp(),
+            "fecha_exacta" to System.currentTimeMillis(),
+            "hora_local" to java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date())
+        )
+        // Se guarda el registro individual en la publicación
+        db.collection("publicaciones").document(idPublicacion)
+            .collection("historial_reproducciones").document(idRegistro).set(registro)
+
+        // Aumenta conteo total
+        db.collection("publicaciones").document(idPublicacion)
+            .update("conteo_reproducciones", FieldValue.increment(1))
+    }
+
+    fun registrarVistaFoto(idPublicacion: String) {
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("publicaciones").document(idPublicacion)
+            .collection("historial_vistas").add(mapOf(
+                "id_usuario" to uid,
+                "fecha" to FieldValue.serverTimestamp(),
+                "hora_exacta" to System.currentTimeMillis()
+            ))
+        db.collection("publicaciones").document(idPublicacion)
+            .update("conteo_vistas_foto", FieldValue.increment(1))
+    }
+
+    // 4. LIKES Y COMENTARIOS CON REGISTRO COMPLETO
+    fun darLike(idPublicacion: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val likeId = "${uid}_${idPublicacion}"
+        val data = hashMapOf(
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "id_publicacion" to idPublicacion,
+            "fecha" to FieldValue.serverTimestamp(),
+            "hora_exacta" to System.currentTimeMillis(),
+            "hora_legible" to java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date())
+        )
+        db.collection("likes").document(likeId).set(data)
+        db.collection("publicaciones").document(idPublicacion).collection("registro_likes").document(likeId).set(data)
+        db.collection("publicaciones").document(idPublicacion).update("conteo_likes", FieldValue.increment(1))
+    }
+
+    fun comentar(idPublicacion: String, comentario: String) {
+        val uid = auth.currentUser?.uid ?: return
+        val data = hashMapOf(
+            "id_usuario" to uid,
+            "nombre_usuario" to (auth.currentUser?.displayName ?: "Usuario"),
+            "id_publicacion" to idPublicacion,
+            "comentario" to comentario,
+            "fecha" to FieldValue.serverTimestamp(),
+            "hora_exacta" to System.currentTimeMillis(),
+            "region" to "auto-detectar GPS"
+        )
+        db.collection("publicaciones").document(idPublicacion).collection("comentarios").add(data)
+        db.collection("publicaciones").document(idPublicacion).update("conteo_comentarios", FieldValue.increment(1))
+    }
+
+    // 5. LUPA - USUARIOS Y GRUPOS
+    fun buscarEnLupa(texto: String, cbUsers: (List<Map<String, Any>>) -> Unit, cbGrupos: (List<Map<String, Any>>) -> Unit) {
+        val t = texto.lowercase()
+        db.collection("usuarios").orderBy("username").startAt(t).endAt(t + "\uf8ff").limit(20)
+            .get().addOnSuccessListener { cbUsers(it.documents.map { d -> d.data!! }) }
+        db.collection("grupos").orderBy("nombre").startAt(t).endAt(t + "\uf8ff").limit(20)
+            .get().addOnSuccessListener { cbGrupos(it.documents.map { d -> d.data!! }) }
+    }
+
+    // 6. GRUPOS
+    fun crearGrupo(nombre: String, tipo: String, reglas: String) {
+        db.collection("grupos").add(mapOf(
+            "id" to UUID.randomUUID().toString(),
+            "nombre" to nombre,
+            "tipo" to tipo,
+            "reglas" to reglas,
+            "id_creador" to auth.currentUser!!.uid,
+            "fecha" to FieldValue.serverTimestamp()
+        ))
+    }
+}
