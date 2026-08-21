@@ -1,5 +1,5 @@
 # Karma facebook - Repositorio oficial
-
+6
 App donde K es el logo. Foto + Canción juntas.
 
 ## Estructura del repositorio
@@ -1310,4 +1310,11 @@ object KarmaAppFix {
             "fecha" to FieldValue.serverTimestamp()
         ))
     }
-}
+}KarmaAppFix.buscarEnLupa("kar", 
+    callbackUsuarios = { usuarios -> 
+        // Muestra lista de usuarios
+    },
+    callbackGrupos = { grupos ->
+        // Muestra lista de grupos
+    }
+)
