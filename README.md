@@ -1,3 +1,78 @@
+// ========== REPRODUCIR VIDEOS - FUNCIONES ==========
+
+let pendingVideo = null;
+
+// 1. CARGAR Y REPRODUCIR VIDEO LOCAL
+function cargarVideo(input){
+  const file = input.files[0];
+  const url = URL.createObjectURL(file);
+  const video = document.getElementById('mainVideo');
+
+  video.src = url;
+  video.load();
+  video.play(); // ▶️ REPRODUCE
+
+  video.onloadedmetadata = ()=>{
+    console.log(`${video.videoWidth}x${video.videoHeight} • ${video.duration}s`);
+  };
+
+  pendingVideo = {
+    url: url,
+    name: file.name,
+    size: (file.size/1024/1024).toFixed(2)+' MB',
+    type: file.type
+  };
+}
+
+// 2. PLAY / PAUSE
+function togglePlay(){
+  const v = document.getElementById('mainVideo');
+  if(v.paused) v.play();
+  else v.pause();
+}
+
+// 3. VOLUMEN 🔊 0 a 100%
+function setVol(valor){
+  // valor de 0 a 1
+  document.getElementById('mainVideo').volume = valor;
+}
+// HTML: <input type="range" min="0" max="1" step="0.05" oninput="setVol(this.value)">
+
+// 4. MUTE 🔇
+function toggleMute(){
+  const v = document.getElementById('mainVideo');
+  v.muted =!v.muted;
+}
+
+// 5. PANTALLA COMPLETA ⛶
+function fullscreen(){
+  document.getElementById('mainVideo').requestFullscreen();
+}
+
+// 6. CAPTURA IMAGEN DE PANTALLA 📸
+function capturarPantalla(){
+  const v = document.getElementById('mainVideo');
+  const canvas = document.createElement('canvas');
+  canvas.width = v.videoWidth;
+  canvas.height = v.videoHeight;
+  canvas.getContext('2d').drawImage(v,0,0);
+  const imagen = canvas.toDataURL('image/png');
+
+  // Usar como poster
+  v.poster = imagen;
+  return imagen;
+}
+
+// 7. MINI PLAYER 📺 (Picture in Picture)
+function miniPlayer(){
+  document.getElementById('mainVideo').requestPictureInPicture();
+}
+
+// 8. REPRODUCIR EN FEED - TODOS PUEDEN VER
+function reproducirEnFeed(url){
+  return `<video src="${url}" controls playsinline preload="metadata"
+           style="width:100%;border-radius:10px"></video>`;
+}
 <!-- LUPA ARRIBA FIJA -->
 <EditText
     android:id="@+id/lupaBusqueda"
