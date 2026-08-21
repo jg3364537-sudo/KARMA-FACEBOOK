@@ -1,3 +1,66 @@
+    // ===== 7. VIDEO LLAMADAS Y LLAMADAS DE VOZ - SOLO SEGUIDORES =====
+    
+    fun iniciarLlamada(idDestino: String, tipo: String){ // tipo: video o voz
+        val uid = auth.currentUser!!.uid
+        val idLlamada = UUID.randomUUID().toString()
+
+        val datosLlamada = mapOf(
+            "id_llamada" to idLlamada,
+            "de" to uid,
+            "para" to idDestino,
+            "nombre_de" to (auth.currentUser?.displayName ?: "Usuario"),
+            "tipo" to tipo, // video o voz
+            "estado" to "llamando",
+            "fecha" to FieldValue.serverTimestamp(),
+            "hora_exacta" to System.currentTimeMillis(),
+            "hora_legible" to java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date()),
+            "region" to "auto GPS"
+        )
+
+        // 1. Verifica que sean amigos / seguidores mutuos
+        db.collection("amistades")
+            .whereEqualTo("de", uid).whereEqualTo("para", idDestino).whereEqualTo("estado", "aceptado")
+            .get().addOnSuccessListener { res ->
+                if(!res.isEmpty){
+                    // Si son amigos, inicia la llamada
+                    db.collection("llamadas").document(idLlamada).set(datosLlamada)
+                    // Notifica al otro usuario
+                    db.collection("usuarios").document(idDestino).collection("llamadas_entrantes").document(idLlamada).set(datosLlamada)
+                }
+            }
+    }
+
+    fun contestarLlamada(idLlamada: String){
+        db.collection("llamadas").document(idLlamada).update(
+            mapOf("estado" to "contestada", "hora_contestada" to System.currentTimeMillis())
+        )
+    }
+
+    fun terminarLlamada(idLlamada: String, duracionSegundos: Long){
+        db.collection("llamadas").document(idLlamada).update(
+            mapOf(
+                "estado" to "terminada",
+                "duracion" to duracionSegundos,
+                "hora_terminada" to System.currentTimeMillis()
+            )
+        )
+    }
+
+    fun registrarLlamadaPerdida(idLlamada: String){
+        db.collection("llamadas").document(idLlamada).update("estado", "perdida")
+    }
+
+    // Escucha llamadas entrantes
+    fun escucharLlamadasEntrantes(callback: (Map<String, Any>) -> Unit){
+        val uid = auth.currentUser?.uid ?: return
+        db.collection("usuarios").document(uid).collection("llamadas_entrantes")
+            .whereEqualTo("estado", "llamando")
+            .addSnapshotListener { snap, _ ->
+                snap?.documents?.forEach { doc ->
+                    callback(doc.data!!)
+                }
+            }
+    }
 // ========== REPRODUCIR VIDEOS - FUNCIONES ==========
 
 let pendingVideo = null;
