@@ -1,3 +1,60 @@
+<!-- LUPA ARRIBA FIJA -->
+<EditText
+    android:id="@+id/lupaBusqueda"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:hint="🔍 Buscar usuarios, grupos, publicaciones..."
+    android:background="@drawable/fondo_lupa"
+    android:paddingLeft="16dp"
+    android:layout_margin="10dp"/>
+
+<!-- PUBLICACIÓN -->
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#1A1A1A"
+    android:padding="10dp"
+    android:layout_margin="8dp">
+
+    <ImageView android:id="@+id/imgContenido" android:layout_width="match_parent" android:layout_height="200dp"/>
+    <TextView android:id="@+id/txtContador" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textColor="#FFF" android:text="0 reproducciones"/>
+
+    <!-- BOTONES COMPARTIR -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <Button
+            android:id="@+id/btnCompartirPublico"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="🌍 PÚBLICO MUNDIAL"
+            android:backgroundTint="#00C853"/>
+
+        <Button
+            android:id="@+id/btnCompartirPrivado"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="🔒 PRIVADO"
+            android:layout_marginLeft="5dp"
+            android:backgroundTint="#FF3D00"/>
+
+        <Button
+            android:id="@+id/btnCompartirAmigos"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="👥 AMIGOS"
+            android:layout_marginLeft="5dp"
+            android:backgroundTint="#2962FF"/>
+
+    </LinearLayout>
+</LinearLayout>
 package com.karmamusical.app
 
 import com.google.firebase.auth.FirebaseAuth
