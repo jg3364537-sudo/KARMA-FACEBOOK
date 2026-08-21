@@ -1,3 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <!-- BURBUJA DE ESTADO DE ANIMO -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@drawable/fondo_burbuja"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/txtBurbujaPalabra"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✨ Inspirado"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:textSize="16sp"/>
+
+        <TextView
+            android:id="@+id/btnEditarBurbuja"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="  ✏️"
+            android:textSize="16sp"
+            android:layout_marginLeft="8dp"/>
+
+    </LinearLayout>
+
+    <!-- INPUT PARA ESCRIBIR TU PALABRA -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp">
+
+        <EditText
+            android:id="@+id/inputAnimo"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:hint="Escribe tu estado: Feliz, Creativo, Enfocado..."
+            android:background="@drawable/fondo_lupa"
+            android:paddingLeft="16dp"
+            android:textColor="#FFF"/>
+
+        <Button
+            android:id="@+id/btnPublicarAnimo"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:text="Publicar"
+            android:layout_marginLeft="8dp"
+            android:backgroundTint="#7C4DFF"/>
+
+    </LinearLayout>
+
+</LinearLayout><shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#7C4DFF"/>
+    <corners android:radius="20dp"/>
+    <stroke android:width="2dp" android:color="#FFFFFF"/>
+</shape>val input = findViewById<EditText>(R.id.inputAnimo)
+val btn = findViewById<Button>(R.id.btnPublicarAnimo)
+val txtBurbuja = findViewById<TextView>(R.id.txtBurbujaPalabra)
+
+btn.setOnClickListener {
+    val palabra = input.text.toString()
+    if(palabra.isNotEmpty()){
+        KarmaSuperCompleto.publicarEstadoAnimo(palabra, "#7C4DFF")
+        txtBurbuja.text = "✨ $palabra"
+        input.text.clear()
+        Toast.makeText(this, "Estado publicado: $palabra", Toast.LENGTH_SHORT).show()
+    }
+}
     // ===== 7. VIDEO LLAMADAS Y LLAMADAS DE VOZ - SOLO SEGUIDORES =====
     
     fun iniciarLlamada(idDestino: String, tipo: String){ // tipo: video o voz
