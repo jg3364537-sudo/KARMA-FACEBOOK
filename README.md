@@ -1,3 +1,93 @@
+package com.karmamusical.app
+
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
+import java.util.UUID
+import kotlin.random.Random
+
+object KarmaCompleto {
+
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
+    // ===== 1. LUPA HASTA ARRIBA =====
+    fun buscarEnLupa(texto: String, cbUsers: (List<Map<String, Any>>) -> Unit, cbGrupos: (List<Map<String, Any>>) -> Unit) {
+        val t = texto.lowercase().trim()
+        db.collection("usuarios").orderBy("username").startAt(t).endAt(t + "\uf8ff").limit(20)
+            .get().addOnSuccessListener { cbUsers(it.documents.map { d -> d.data!! }) }
+        db.collection("grupos").orderBy("nombre").startAt(t).endAt(t + "\uf8ff").limit(20)
+            .get().addOnSuccessListener { cbGrupos(it.documents.map { d -> d.data!! }) }
+    }
+
+    // ===== 2. REGISTRO 6 DIGITOS AL AZAR =====
+    fun registrar(nombre: String, apellido: String, username: String, email: String, pass: String, callback: (String)->Unit){
+        auth.createUserWithEmailAndPassword(email, pass).addOnSuccessListener {
+            val uid = it.user!!.uid
+            val codigo = "KARMA-${Random.nextInt(100000, 999999)}"
+            db.collection("usuarios").document(uid).set(mapOf(
+                "id" to uid, "codigo_karma" to codigo, "nombre" to nombre, "apellido" to apellido,
+                "username" to username.lowercase(), "nombre_completo" to "$nombre $apellido",
+                "email" to email, "amigos_count" to 0, "fecha" to FieldValue.serverTimestamp()
+            ))
+            callback(codigo)
+        }
+    }
+
+    // ===== 3. PUBLICAR AUDIO VIDEO FOTO MENSAJE ESTADO HISTORIA =====
+    fun publicar(tipo: String, url: String, texto: String, region: String){
+        val id = UUID.randomUUID().toString()
+        db.collection("publicaciones").document(id).set(mapOf(
+            "id_publicacion" to id, "id_usuario" to auth.currentUser!!.uid,
+            "tipo" to tipo, "url" to url, "texto" to texto, "region" to region,
+            "fecha" to FieldValue.serverTimestamp(), "hora_exacta" to System.currentTimeMillis(),
+            "conteo_likes" to 0, "conteo_comentarios" to 0, "conteo_reproducciones" to 0
+        ))
+    }
+
+    // ===== 4. REPRODUCCION INDIVIDUAL - CADA QUIEN POR SU CUENTA =====
+    fun reproducir(idPub: String){
+        val uid = auth.currentUser?.uid ?: return
+        val registro = mapOf(
+            "id_usuario" to uid, "nombre" to (auth.currentUser?.displayName ?: "Usuario"),
+            "id_publicacion" to idPub, "fecha" to FieldValue.serverTimestamp(),
+            "hora_exacta" to System.currentTimeMillis(),
+            "hora" to java.text.SimpleDateFormat("dd/MM/yyyy HH:mm:ss").format(java.util.Date())
+        )
+        db.collection("publicaciones").document(idPub).collection("historial").add(registro)
+        db.collection("publicaciones").document(idPub).update("conteo_reproducciones", FieldValue.increment(1))
+    }
+
+    // ===== 5. LIKES Y COMENTARIOS CON REGISTRO =====
+    fun darLike(idPub: String){
+        val uid = auth.currentUser!!.uid
+        val data = mapOf("id_usuario" to uid, "id_publicacion" to idPub, "fecha" to FieldValue.serverTimestamp(), "hora_exacta" to System.currentTimeMillis())
+        db.collection("likes").document("${uid}_${idPub}").set(data)
+        db.collection("publicaciones").document(idPub).update("conteo_likes", FieldValue.increment(1))
+    }
+
+    fun comentar(idPub: String, texto: String){
+        db.collection("publicaciones").document(idPub).collection("comentarios").add(mapOf(
+            "id_usuario" to auth.currentUser!!.uid, "comentario" to texto,
+            "fecha" to FieldValue.serverTimestamp(), "hora_exacta" to System.currentTimeMillis()
+        ))
+        db.collection("publicaciones").document(idPub).update("conteo_comentarios", FieldValue.increment(1))
+    }
+
+    // ===== 6. COMPARTIR PUBLICO MUNDIAL / PRIVADO / AMIGOS =====
+    fun compartir(idPub: String, modo: String){ // modo: publico_mundial, privado, amigos
+        val data = mapOf(
+            "id_original" to idPub, "id_usuario" to auth.currentUser!!.uid,
+            "modo" to modo, "fecha" to FieldValue.serverTimestamp(),
+            "hora_exacta" to System.currentTimeMillis()
+        )
+        val idNuevo = UUID.randomUUID().toString()
+        db.collection("compartidos").document(idNuevo).set(data)
+        if(modo == "publico_mundial"){
+            db.collection("feed_mundial").document(idNuevo).set(data)
+        }
+    }
+}
 # Karma facebook - Repositorio oficial
 6
 App donde K es el logo. Foto + Canción juntas.
