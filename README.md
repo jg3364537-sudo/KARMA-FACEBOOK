@@ -1,3 +1,31 @@
+PROMPT PARA GENERAR ESTE ARCHIVO:
+Crea una app en un solo archivo HTML con React 18 + Tailwind.
+Es una red social llamada KAR FACEMEX modo oscuro premium.
+
+1. Feed (Componente Q0):
+Header 64px sticky: logo K con gradiente fuchsia a violeta, titulo KAR FACEMEX, botones: Plays Karma (gradiente), + Subir, Admin.
+Barra de filtros: Todo, Audio, Video, Fotos. Si hay un post expandido muestra "Modo - X/Y - Siguiente -> - Cerrar".
+Feed centrado max-w 680px con posts de este shape: id, userId, userName, handle, verified, avatarColor (from-... to-...), letter, type (audio/video/foto), title, text, cover (unsplash), likes, liked, comments, shares, createdAt, isAd, owner, reactions.
+Inicializa con 6 posts de ejemplo. Al hacer click en un post (que no sea encuesta) entra en modo visor expandido por tipo con reproductor.
+Si type es audio, muestra overlay con gradiente negro y boton play que usa useRef para audios. Si es video, overlay con boton play.
+Footer de cada post: botones like (rojo si liked), comentarios, shares (al compartir suma 1 y toast "Compartido a amigos de amigos • Alcance x2"), y 4 reacciones rapidas.
+Implementa encuesta como post especial: id poll-xxx, muestra pregunta + opciones con barras de porcentaje degradadas.
+Funciones: like toggle, filtrado por tipo, modo Plays Karma = filtra solo audio y muestra toast "Modo Plays Karma • Solo audios".
+
+2. Modal Subir (W0):
+Modal bottom-sheet con selector audio/video/foto, inputs titulo, descripcion, url cover. Detecta con /copyright/i si hay copyright, si hay muestra alerta roja. Checkbox "Impulsar como anuncio" y para audio checkbox obligatorio de T&C. Boton Publicar crea post con userId yo y lo agrega al inicio del feed. Si tenia copyright, agregalo tambien a tabla kar_copy como congelado 15 dias.
+
+3. Admin (H0):
+Se entra si pathname es /admin o?admin=1. Login en $0: pide correo con @ y. y contraseña que termina en "1986". Timer de 300 segundos que baja cada segundo, si llega a 0 bloquea 24h guardando timestamp en localStorage adminLockUntil. Si falla tambien bloquea 24h. Muestra bloqueo con contador HH:MM:SS.
+Si esta logueado muestra sidebar 280px con menu: promos, posts, verif, polls, copy, money.
+- promos: subir archivo imagen (FileReader a base64) y audio mp3 (URL.createObjectURL), guardar en localStorage kar_promos.
+- posts: crear post promo con textarea y marcar como anuncio.
+- verif: lista de 7 usuarios verificables, boton toggle que cambia verified en usuarios y en posts.
+- polls: select con banco de 30 preguntas, boton Rotar aleatorio, inputs para 6 opciones, input dias, boton Crear encuesta que guarda en kar_polls.
+- copy: tabla con track, owner, reason, status, boton Congelar 15d / Liberar.
+- money: 3 cards de total liberado/congelado/metodo y tabla.
+
+Todo usa localStorage con hook Ze. Diseño dark #050507 y #0a0a0d, bordes white/[0.06], Inter y Space Grotesk de Google Fonts, rounded 20px y 28px.[tipo]
 <!DOCTYPE html>
 <html lang="en">
 <head><style>
