@@ -1,3 +1,26 @@
+val check = findViewById<CheckBox>(R.id.checkAcepto)
+val btn = findViewById<Button>(R.id.btnAceptarTerminos)
+
+check.setOnCheckedChangeListener { _, isChecked ->
+    btn.isEnabled = isChecked
+    btn.alpha = if(isChecked) 1.0f else 0.5f
+}
+
+btn.setOnClickListener {
+    val uid = FirebaseAuth.getInstance().currentUser!!.uid
+    FirebaseFirestore.getInstance().collection("usuarios").document(uid).update(mapOf(
+        "acepto_terminos" to true,
+        "fecha_acepto_terminos" to FieldValue.serverTimestamp(),
+        "hora_exacta_acepto" to System.currentTimeMillis(),
+        "firma_electronica" to "ACEPTADO_BOTON_${System.currentTimeMillis()}",
+        "acepto_notificaciones" to true,
+        "acepto_actualizaciones" to true
+    )).addOnSuccessListener {
+        Toast.makeText(this, "Términos aceptados", Toast.LENGTH_SHORT).show()
+        startActivity(Intent(this, MainActivity::class.java))
+        finish()
+    }
+}
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
